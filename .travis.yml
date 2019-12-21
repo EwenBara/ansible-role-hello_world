@@ -12,6 +12,9 @@ env:
   - TOXENV=py-ansible-28
   - TOXENV=py-ansible-29
   - TOXENV=py-ansible-devel
+jobs:
+  allow_failures:
+    - env: TOXENV=py-ansible-devel
 services:
   - docker
 before_install:
