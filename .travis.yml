@@ -1,0 +1,18 @@
+---
+os: linux
+language: python
+python:
+  - "3.5"
+  - "3.6"
+  - "3.7"
+  - "3.8"
+services:
+  - docker
+before_install:
+  - sudo apt-get -qq update
+install:
+  - pip install molecule
+  # - pip install required driver (e.g. docker, python-vagrant, shade, boto, apache-libcloud)
+  - pip install docker
+script:
+  - molecule test

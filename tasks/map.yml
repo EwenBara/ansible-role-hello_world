@@ -1,0 +1,25 @@
+---
+
+- name: load default
+  include_vars:
+    file: default.yml
+    name: "default"
+
+- name: load OS family map
+  include_vars:
+    file: osfamilymap.yml
+    name: "osfamilymap"
+
+- name: load distribution map
+  include_vars:
+    file: distributionmap.yml
+    name: "distributionmap"
+
+- name: compute configuration
+  set_fact:
+    hello_work: "{{ default.hello_world | combine(
+      osfamilymap[ansible_os_family].hello_world is defined | ternary(osfamilymap[ansible_os_family].hello_world, {}),
+      distributionmap[ansible_distribution].hello_world is defined | ternary(distributionmap[ansible_distribution].hello_world, {}),
+      hello_world | default({}),
+      recursive=True
+      ) }}"
