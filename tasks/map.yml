@@ -26,7 +26,7 @@
 
 - name: compute configuration
   set_fact:
-    hello_world: "{{ default.hello_world | combine(
+    hello_world: "{{ default.hello_world | default({}) | combine(
       osfamilymap[ansible_os_family].hello_world is defined | ternary(osfamilymap[ansible_os_family].hello_world, {}),
       distributionmap[ansible_distribution].hello_world is defined | ternary(distributionmap[ansible_distribution].hello_world, {}),
       fingerprintmap[ansible_fingerprint].hello_world is defined | ternary(fingerprintmap[ansible_fingerprint].hello_world, {}),
