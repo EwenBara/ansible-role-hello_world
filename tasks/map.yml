@@ -15,11 +15,21 @@
     file: distributionmap.yml
     name: "distributionmap"
 
+- name: load fingerprint map
+  include_vars:
+    file: fingerprintmap.yml
+    name: "fingerprintmap"
+
+- name: compute fingerprint
+  set_fact:
+    ansible_fingerprint: "{{ ansible_distribution+(ansible_distribution_major_version != 'NA') | ternary(ansible_distribution_major_version, '') }}"
+
 - name: compute configuration
   set_fact:
-    hello_work: "{{ default.hello_world | combine(
+    hello_world: "{{ default.hello_world | combine(
       osfamilymap[ansible_os_family].hello_world is defined | ternary(osfamilymap[ansible_os_family].hello_world, {}),
       distributionmap[ansible_distribution].hello_world is defined | ternary(distributionmap[ansible_distribution].hello_world, {}),
+      fingerprintmap[ansible_fingerprint].hello_world is defined | ternary(fingerprintmap[ansible_fingerprint].hello_world, {}),
       hello_world | default({}),
       recursive=True
       ) }}"
