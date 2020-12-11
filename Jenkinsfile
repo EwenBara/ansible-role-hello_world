@@ -1,4 +1,6 @@
 node {
+	checkout scm
+
 	def jobs = [:]
 
 	toxenv = sh(script: 'tox --listenvs', returnStdout: true).trim().split('\n')
