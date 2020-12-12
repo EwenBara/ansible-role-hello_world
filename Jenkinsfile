@@ -8,7 +8,9 @@ node {
 		item ->
 			jobs[item] = {
 				stage('Test') {
-					sh(script: 'export TMPDIR=/var/tmp; tox -r -e ' + item + ' test')
+					lock('podman') {
+						sh(script: 'export TMPDIR=/var/tmp; tox -r -e ' + item + ' test')
+					}
 				}
 			}
 	}
