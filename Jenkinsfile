@@ -7,10 +7,19 @@ node {
 	toxenv.each {
 		item ->
 			jobs[item] = {
-				stage('Test') {
-					lock('podman') {
-						sh(script: 'export TMPDIR=/var/tmp; tox -r -e ' + item + ' test')
+				stage('Preprare venv') {
+					catchError(buildResult: 'NOT_BUILT', stageResult: 'FAILURE') {
+						sh(script: 'export TMPDIR=/var/tmp; tox -r -e ' + item)
 					}
+				}
+				try {
+					stage('Test') {
+						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+						sh(script: 'tox -e ' + item + ' -- test')
+					}
+				}
+				finally {
+						sh(script: 'tox -e ' + item + ' -- destroy')
 				}
 			}
 	}
