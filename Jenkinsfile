@@ -15,7 +15,8 @@ node {
 				try {
 					stage('Test') {
 						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-						sh(script: 'tox -e ' + item + ' -- test')
+							sh(script: 'tox -e ' + item + ' -- test')
+						}
 					}
 				}
 				finally {
