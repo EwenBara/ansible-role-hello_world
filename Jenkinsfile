@@ -2,6 +2,7 @@ node {
 	checkout scm
 
 	def jobs = [:]
+	def jobsResult = [:]
 
 	toxenv = sh(script: 'tox --listenvs', returnStdout: true).trim().split('\n')
 	toxenv.each {
@@ -13,8 +14,7 @@ node {
 					}
 				}
 				catch(e) {
-					currentStage.result = 'NOT_BUILT'
-					currentBuild.result = 'FAILURE'
+					jobsResult[item] = 'NOT_BUILT'
 					throw e
 				}
 				try {
@@ -27,8 +27,7 @@ node {
 						}
 					}
 					catch(e) {
-						currentStage.result = 'FAILURE'
-						currentBuild.result = 'FAILURE'
+						jobsResult[item] = 'FAILURE'
 						throw e
 					}
 					try {
@@ -37,8 +36,7 @@ node {
 						}
 					}
 					catch(e) {
-						currentStage.result = 'FAILURE'
-						currentBuild.result = 'NOT_BUILT'
+						jobsResult[item] = 'NOT_BUILT'
 						throw e
 					}
 					try {
@@ -47,8 +45,7 @@ node {
 						}
 					}
 					catch(e) {
-						currentStage.result = 'FAILURE'
-						currentBuild.result = 'FAILURE'
+						jobsResult[item] = 'FAILURE'
 						throw e
 					}
 					try {
@@ -57,8 +54,7 @@ node {
 						}
 					}
 					catch(e) {
-						currentStage.result = 'FAILURE'
-						currentBuild.result = 'UNSTABLE'
+						jobsResult[item] = 'UNSTABLE'
 						throw e
 					}
 					try {
@@ -67,10 +63,10 @@ node {
 						}
 					}
 					catch(e) {
-						currentStage.result = 'FAILURE'
-						currentBuild.result = 'FAILURE'
+						jobsResult[item] = 'FAILURE'
 						throw e
 					}
+					jobsResult[item] = 'SUCCESS'
 				}
 				finally {
 					stage('Clean') {
@@ -81,4 +77,10 @@ node {
 	}
 
 	parallel(jobs)
+
+	if(jobsResult.count('SUCCESS') == 0) {
+		currentBuild.result == 'FAILURE'
+	} else if(jobsResult.count('SUCCESS') != jobsResult.size()) {
+		currentBuild.result == 'UNSTABLE'
+	}
 }
