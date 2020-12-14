@@ -60,13 +60,13 @@ node {
 					try {
 						stage('Verify') {
 							sh(script: 'tox -e ' + item + ' -- verify')
-							jobsResult[item] = 'SUCCESS'
 						}
 					}
 					catch(e) {
 						jobsResult[item] = 'FAILURE'
 						throw e
 					}
+					jobsResult[item] = 'SUCCESS'
 				}
 				finally {
 					stage('Clean') {
@@ -78,9 +78,9 @@ node {
 
 	parallel(jobs)
 
-	if(jobsResult.count('SUCCESS') == 0) {
+	if(jobsResult.values().count('SUCCESS') == 0) {
 		currentBuild.result == 'FAILURE'
-	} else if(jobsResult.count('SUCCESS') != jobsResult.size()) {
+	} else if(jobsResult.values().count('SUCCESS') != jobsResult.size()) {
 		currentBuild.result == 'UNSTABLE'
 	}
 }
