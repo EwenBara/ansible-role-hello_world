@@ -7,20 +7,75 @@ node {
 	toxenv.each {
 		item ->
 			jobs[item] = {
-				stage('Preprare venv') {
-					catchError(buildResult: 'NOT_BUILT', stageResult: 'FAILURE') {
-						sh(script: 'export TMPDIR=/var/tmp; tox -r -e ' + item)
+				try {
+					stage('Preprare venv') {
+							sh(script: 'export TMPDIR=/var/tmp; tox -r --notest -e ' + item)
 					}
 				}
+				catch(e) {
+					currentStage.result = 'NOT_BUILT'
+					currentBuild.result = 'FAILURE'
+					throw e
+				}
 				try {
-					stage('Test') {
-						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-							sh(script: 'tox -e ' + item + ' -- test')
+					try {
+						stage('Lint') {
+							sh(script: 'tox -e ' + item + ' -- lint')
 						}
+						stage('Syntax') {
+							sh(script: 'tox -e ' + item + ' -- syntax')
+						}
+					}
+					catch(e) {
+						currentStage.result = 'FAILURE'
+						currentBuild.result = 'FAILURE'
+						throw e
+					}
+					try {
+						stage('Create') {
+							sh(script: 'tox -e ' + item + ' -- syntax')
+						}
+					}
+					catch(e) {
+						currentStage.result = 'FAILURE'
+						currentBuild.result = 'NOT_BUILT'
+						throw e
+					}
+					try {
+						stage('Converge') {
+							sh(script: 'tox -e ' + item + ' -- converge')
+						}
+					}
+					catch(e) {
+						currentStage.result = 'FAILURE'
+						currentBuild.result = 'FAILURE'
+						throw e
+					}
+					try {
+						stage('Idempotence') {
+							sh(script: 'tox -e ' + item + ' -- idempotence')
+						}
+					}
+					catch(e) {
+						currentStage.result = 'FAILURE'
+						currentBuild.result = 'UNSTABLE'
+						throw e
+					}
+					try {
+						stage('Verify') {
+							sh(script: 'tox -e ' + item + ' -- idempotence')
+						}
+					}
+					catch(e) {
+						currentStage.result = 'FAILURE'
+						currentBuild.result = 'FAILURE'
+						throw e
 					}
 				}
 				finally {
+					stage('Clean') {
 						sh(script: 'tox -e ' + item + ' -- destroy')
+					}
 				}
 			}
 	}
