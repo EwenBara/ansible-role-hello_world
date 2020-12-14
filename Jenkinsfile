@@ -59,14 +59,14 @@ node {
 					}
 					try {
 						stage('Verify') {
-							sh(script: 'tox -e ' + item + ' -- idempotence')
+							sh(script: 'tox -e ' + item + ' -- verify')
+							jobsResult[item] = 'SUCCESS'
 						}
 					}
 					catch(e) {
 						jobsResult[item] = 'FAILURE'
 						throw e
 					}
-					jobsResult[item] = 'SUCCESS'
 				}
 				finally {
 					stage('Clean') {
